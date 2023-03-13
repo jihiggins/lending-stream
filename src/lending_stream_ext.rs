@@ -68,7 +68,7 @@ pub trait LendingStreamExt: LendingStream {
         }
     }
 
-    /*
+    #[cfg(feature = "polonius")]
     fn filter<P>(self, predicate: P) -> Filter<Self, P>
     where
         Self: Sized,
@@ -79,6 +79,7 @@ pub trait LendingStreamExt: LendingStream {
             predicate,
         }
     }
+    /*
 
     fn filter_map<T, F>(self, f: F) -> FilterMap<Self, F>
     where
@@ -602,7 +603,7 @@ where
     }
 }
 
-/*
+#[cfg(feature = "polonius")]
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
@@ -613,13 +614,15 @@ pin_project! {
     }
 }
 
+#[cfg(feature = "polonius")]
 impl<S, P> LendingStream for Filter<S, P>
 where
     S: LendingStream + Unpin,
-    for<'a> P: FnMut(&Self::Item<'a>) -> bool,
+    for<'a> S::NextFuture<'a>: Future,
+    for<'a> P: FnMut(&S::Item<'a>) -> bool,
 {
-    type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<S::Item<'a>>> where S: 'a;
+    type Item<'a> = S::Item<'a> where S: 'a, P: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a, P: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -637,6 +640,7 @@ where
     }
 }
 
+/*
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
