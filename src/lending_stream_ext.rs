@@ -485,7 +485,7 @@ where
     for<'a> F: FnMut(S::Item<'a>) -> T,
 {
     type Item<'a> = T where F: 'a, S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where F: 'a, S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where F: 'a, S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -531,7 +531,7 @@ where
     for<'a> F: FnMut(S::Item<'a>) -> U,
 {
     type Item<'a> = U::Item<'a> where F: 'a, S: 'a, U: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<U::Item<'a>>> where F: 'a, S: 'a, U: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<U::Item<'a>>> where F: 'a, S: 'a, U: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -560,7 +560,7 @@ where
     for<'a> S: LendingStream<Item<'a> = U> + Unpin + 'a,
 {
     type Item<'a> = <<S as LendingStream>::Item<'a> as LendingStream>::Item<'a> where S: 'a, S::Item<'a>: 'a, Self: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a, S::Item<'a>: 'a, Self: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a, S::Item<'a>: 'a, Self: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -589,7 +589,7 @@ where
     Fut: Future,
 {
     type Item<'a> = Fut::Output where F: 'a, S: 'a, Fut: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where F: 'a, S: 'a, Fut: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where F: 'a, S: 'a, Fut: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -696,7 +696,7 @@ where
     S: LendingStream + Unpin,
 {
     type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -769,7 +769,7 @@ where
     S: LendingStream + Unpin,
 {
     type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -838,7 +838,7 @@ where
     S: LendingStream + Unpin,
 {
     type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -876,7 +876,7 @@ where
     for<'a> U: LendingStream<Item<'a> = S::Item<'a>> + Unpin + 'a,
 {
     type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -966,7 +966,7 @@ where
     F: FnMut(&mut St, S::Item<'_>) -> Option<B>,
 {
     type Item<'a> = B where F: 'a, St: 'a, S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where F: 'a, St: 'a, S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where F: 'a, St: 'a, S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -995,7 +995,7 @@ where
     S: LendingStream + Unpin,
 {
     type Item<'a> = S::Item<'a> where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -1069,7 +1069,7 @@ where
     S: LendingStream + Unpin,
 {
     type Item<'a> = (usize, S::Item<'a>) where S: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -1101,7 +1101,7 @@ where
     for<'a> F: FnMut(&S::Item<'a>),
 {
     type Item<'a> = S::Item<'a> where S: 'a, F: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<S::Item<'a>>> where S: 'a, F: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<S::Item<'a>>> where S: 'a, F: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -1133,7 +1133,7 @@ where
     for<'a> B: LendingStream<Item<'a> = A::Item<'a>> + Unpin + 'a,
 {
     type Item<'a> = (A::Item<'a>, B::Item<'a>) where A: 'a, B: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where A: 'a, B: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where A: 'a, B: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -1165,7 +1165,7 @@ where
     for<'a> S2: LendingStream<Item<'a> = T> + Unpin + 'a,
 {
     type Item<'a> = S1::Item<'a> where S1: 'a, S2: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<S1::Item<'a>>> where S1: 'a, S2: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<S1::Item<'a>>> where S1: 'a, S2: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
@@ -1199,7 +1199,7 @@ where
     for<'a> S2: LendingStream<Item<'a> = T> + Unpin + 'a,
 {
     type Item<'a> = S1::Item<'a> where S1: 'a, S2: 'a;
-    type NextFuture<'a> = impl Future<Output = Option<S1::Item<'a>>> where S1: 'a, S2: 'a;
+    type NextFuture<'a> = impl Future<Output=Option<S1::Item<'a>>> where S1: 'a, S2: 'a;
 
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
