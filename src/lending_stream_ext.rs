@@ -1,4 +1,5 @@
 use std::future::Future;
+use std::pin::pin;
 
 use pin_project_lite::pin_project;
 
@@ -1166,11 +1167,13 @@ where
         Self: 'a,
         Self: Unpin,
     {
+        use futures::FutureExt;
         async {
-            let next = self.stream1.next().await;
-            match next {
-                Some(next) => Some(next),
-                None => self.stream2.next().await,
+            let mut f1 = pin!(self.stream1.next().fuse());
+            let mut f2 = pin!(self.stream2.next().fuse());
+            futures::select_biased! {
+                next = f1 => next,
+                next = f2 => next,
             }
         }
     }
@@ -1200,19 +1203,13 @@ where
         Self: 'a,
         Self: Unpin,
     {
+        use futures::FutureExt;
         async {
-            if fastrand::bool() {
-                let next = self.stream1.next().await;
-                match next {
-                    Some(next) => Some(next),
-                    None => self.stream2.next().await,
-                }
-            } else {
-                let next = self.stream2.next().await;
-                match next {
-                    Some(next) => Some(next),
-                    None => self.stream1.next().await,
-                }
+            let mut f1 = pin!(self.stream1.next().fuse());
+            let mut f2 = pin!(self.stream2.next().fuse());
+            futures::select! {
+                next = f1 => next,
+                next = f2 => next,
             }
         }
     }
