@@ -39,3 +39,20 @@ impl<T: Unpin> LendingStream for Once<T> {
         }
     }
 }
+
+impl<F, Fut, T: Unpin> LendingStream for F
+where
+    F: FnMut() -> Fut,
+    Fut: Future<Output = Option<T>>,
+{
+    type Item<'a> = T where Self: 'a;
+    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where Self: 'a;
+
+    fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
+    where
+        Self: 'a,
+        Self: Unpin,
+    {
+        (self)()
+    }
+}
