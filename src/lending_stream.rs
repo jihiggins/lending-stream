@@ -1,5 +1,6 @@
 #![allow(unused)]
 use std::future::Future;
+use std::iter::Once;
 use std::ops::{Deref, DerefMut};
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -18,4 +19,23 @@ pub trait LendingStream {
     where
         Self: 'a,
         Self: Unpin;
+}
+
+impl<T: Unpin> LendingStream for Once<T> {
+    type Item<'a> = T where T: 'a;
+    type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where T: 'a;
+
+    fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
+    where
+        Self: 'a,
+        Self: Unpin,
+    {
+        async move {
+            if let Some(item) = Iterator::next(self) {
+                Some(item)
+            } else {
+                None
+            }
+        }
+    }
 }
