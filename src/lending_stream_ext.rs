@@ -69,7 +69,6 @@ pub trait LendingStreamExt: LendingStream {
         }
     }
 
-    #[cfg(feature = "polonius")]
     fn filter<P>(self, predicate: P) -> Filter<Self, P>
     where
         Self: Sized,
@@ -81,7 +80,6 @@ pub trait LendingStreamExt: LendingStream {
         }
     }
 
-    #[cfg(feature = "polonius")]
     fn filter_map<T, F>(self, f: F) -> FilterMap<Self, F>
     where
         Self: Sized,
@@ -115,7 +113,6 @@ pub trait LendingStreamExt: LendingStream {
         Skip { stream: self, n }
     }
 
-    #[cfg(feature = "polonius")]
     fn skip_while<P>(self, predicate: P) -> SkipWhile<Self, P>
     where
         Self: Sized,
@@ -258,7 +255,6 @@ pub trait LendingStreamExt: LendingStream {
         }
     }
 
-    #[cfg(feature = "polonius")]
     fn cycle(self) -> Cycle<Self>
     where
         Self: Clone + Sized,
@@ -599,7 +595,6 @@ where
     }
 }
 
-#[cfg(feature = "polonius")]
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
@@ -610,7 +605,6 @@ pin_project! {
     }
 }
 
-#[cfg(feature = "polonius")]
 impl<S, P> LendingStream for Filter<S, P>
 where
     S: LendingStream + Unpin,
@@ -620,6 +614,7 @@ where
     type Item<'a> = S::Item<'a> where S: 'a, P: 'a;
     type NextFuture<'a> = impl Future<Output=Option<Self::Item<'a>>> where S: 'a, P: 'a;
 
+    #[cfg(feature = "polonius")]
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
         Self: 'a,
@@ -634,9 +629,27 @@ where
             }
         }
     }
+
+    #[cfg(not(feature = "polonius"))]
+    fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
+    where
+        Self: 'a,
+        Self: Unpin,
+    {
+        async {
+            unsafe {
+                let s: *mut Self = self;
+                loop {
+                    let next = (*s).stream.next().await?;
+                    if ((*s).predicate)(&next) {
+                        return Some(next);
+                    }
+                }
+            }
+        }
+    }
 }
 
-#[cfg(feature = "polonius")]
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
@@ -647,7 +660,6 @@ pin_project! {
     }
 }
 
-#[cfg(feature = "polonius")]
 impl<S, F, T> LendingStream for FilterMap<S, F>
 where
     S: LendingStream + Unpin,
@@ -781,7 +793,6 @@ where
     }
 }
 
-#[cfg(feature = "polonius")]
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
@@ -792,7 +803,6 @@ pin_project! {
     }
 }
 
-#[cfg(feature = "polonius")]
 impl<S, P> LendingStream for SkipWhile<S, P>
 where
     S: LendingStream + Unpin,
@@ -801,6 +811,7 @@ where
     type Item<'a> = S::Item<'a> where S: 'a, P: 'a;
     type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a, P: 'a;
 
+    #[cfg(feature = "polonius")]
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
         Self: 'a,
@@ -811,6 +822,24 @@ where
                 let next = self.stream.next().await?;
                 if !(self.predicate)(&next) {
                     return Some(next);
+                }
+            }
+        }
+    }
+    #[cfg(not(feature = "polonius"))]
+    fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
+    where
+        Self: 'a,
+        Self: Unpin,
+    {
+        async {
+            unsafe {
+                let s: *mut Self = self;
+                loop {
+                    let next = (*s).stream.next().await?;
+                    if !((*s).predicate)(&next) {
+                        return Some(next);
+                    }
                 }
             }
         }
@@ -1013,7 +1042,6 @@ where
     }
 }
 
-#[cfg(feature = "polonius")]
 pin_project! {
     #[derive(Clone, Debug)]
     #[must_use = "streams do nothing unless polled"]
@@ -1024,7 +1052,6 @@ pin_project! {
     }
 }
 
-#[cfg(feature = "polonius")]
 impl<S> LendingStream for Cycle<S>
 where
     S: LendingStream + Clone + Unpin,
@@ -1032,6 +1059,7 @@ where
     type Item<'a> = S::Item<'a> where S: 'a;
     type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S: 'a;
 
+    #[cfg(feature = "polonius")]
     fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
     where
         Self: 'a,
@@ -1044,6 +1072,26 @@ where
                     self.stream.next().await
                 }
                 Some(x) => Some(x),
+            }
+        }
+    }
+
+    #[cfg(not(feature = "polonius"))]
+    fn next<'a>(&'a mut self) -> Self::NextFuture<'a>
+    where
+        Self: 'a,
+        Self: Unpin,
+    {
+        async {
+            unsafe {
+                let s: *mut Self = self;
+                match (*s).stream.next().await {
+                    None => {
+                        (*s).stream = (*s).orig.clone();
+                        (*s).stream.next().await
+                    }
+                    Some(x) => Some(x),
+                }
             }
         }
     }
