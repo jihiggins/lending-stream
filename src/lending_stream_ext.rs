@@ -664,7 +664,7 @@ impl<S, F, T> LendingStream for FilterMap<S, F>
 where
     S: LendingStream + Unpin,
     for<'a> S::NextFuture<'a>: Future,
-    for<'a> F: FnMut(&S::Item<'a>) -> Option<T>,
+    for<'a> F: FnMut(S::Item<'a>) -> Option<T>,
 {
     type Item<'a> = T where S: 'a, F: 'a;
     type NextFuture<'a> = impl Future<Output = Option<Self::Item<'a>>> where S:'a, F: 'a;
@@ -679,7 +679,7 @@ where
                 let next = self.stream.next().await;
                 match next {
                     Some(next) => {
-                        if let Some(next) = (self.f)(&next) {
+                        if let Some(next) = (self.f)(next) {
                             return Some(next);
                         }
                     }
